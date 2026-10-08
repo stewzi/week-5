@@ -90,14 +90,15 @@ def determine_age_division():
     """Flag ages above the median for the passenger's class."""
     df = load_data()
     class_median = df.groupby('pclass')['age'].transform('median')
-    df['older_passenger'] = df['age'] > class_median
+    df['older_passenger'] = (df['age'] > class_median).astype('boolean')
+    df.loc[df['age'].isna(), 'older_passenger'] = pd.NA
     return df
 
 
 def visualize_age_division():
     """Compare survival above and at or below each class's median age."""
     df = determine_age_division()
-    # Unknown ages compare False, but are excluded from the age comparison.
+    # Exclude unknown ages from the age comparison.
     df = df.dropna(subset=['age']).copy()
     df['age_division'] = df['older_passenger'].map(
         {False: 'At or below class median', True: 'Above class median'}
